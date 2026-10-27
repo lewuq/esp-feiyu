@@ -1,0 +1,19 @@
+#pragma once
+
+/* 100 = normal speed, 150 = 1.5x speed. Progress is linear in elapsed time. */
+#define INTRO_SPEED_PERCENT 150
+/* Backlight duty cycle when the screen is on; 0-100. */
+#define DISPLAY_BRIGHTNESS_PERCENT 50
+
+#define INTRO_BASE_WRITE_MS 6600
+#define INTRO_BASE_HOLD_MS 900
+#if INTRO_SPEED_PERCENT <= 0
+#error INTRO_SPEED_PERCENT must be positive
+#endif
+#if DISPLAY_BRIGHTNESS_PERCENT < 0 || DISPLAY_BRIGHTNESS_PERCENT > 100
+#error DISPLAY_BRIGHTNESS_PERCENT must be between 0 and 100
+#endif
+#define INTRO_WRITE_MS ((INTRO_BASE_WRITE_MS * 100 + INTRO_SPEED_PERCENT - 1) / INTRO_SPEED_PERCENT)
+#define INTRO_HOLD_MS ((INTRO_BASE_HOLD_MS * 100 + INTRO_SPEED_PERCENT - 1) / INTRO_SPEED_PERCENT)
+#define INTRO_TOTAL_MS (INTRO_WRITE_MS + INTRO_HOLD_MS)
+#define FRAME_INTERVAL_MS 33
