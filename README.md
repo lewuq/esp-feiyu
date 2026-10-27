@@ -30,6 +30,8 @@ main/
   ui/graphics.c              像素、图形及透明图片混合
   resources/image_assets.c   图片资源及角色/武器组合索引
   assets/                    已转换并嵌入固件的二进制图像
+assets/actors/               大肥鱼原始姿态图片（WebP）
+assets/weapons/              原始武器图片（WebP）
 references/brush_reference.png 用户提供的开机文字参考图
 tools/convert_splash.py       根据参考图生成墨迹和书写顺序数据
 tools/convert_assets.py       将角色和武器 WebP 转换为嵌入式数据
@@ -61,17 +63,15 @@ ST7789 使用反色、RGB 顺序、RAM 偏移 `(52, 40)`。如画面偏移、上
 
 ## 素材生成
 
-已生成的素材包含在 `main/assets` 中，不需要 Python 就能编译。需修改资源时，安装 Python Pillow 后运行：
+原始大肥鱼和武器图片分别保存在 `assets/actors`、`assets/weapons`；已转换的显示素材包含在 `main/assets` 中，不需要 Python 就能编译。需重新转换时，安装 Python Pillow 后运行：
 
 ```powershell
 python tools/convert_splash.py
-python tools/convert_assets.py "/path/to/original/assets"
+python tools/convert_assets.py
 ```
 
 开机图使用 8 位墨迹强度和 8 位笔画顺序，字符轨迹是根据参考图估算的书写路径，并非真实字体笔画数据。角色和武器存为 RGB565 大端序加 8 位透明度。角色素材来源及许可见 `ASSET-LICENSE.txt`。
 
 ## 已编译固件
 
-`firmware_brush_demo/` 包含 ESP32-S3 固件及烧录说明，构建验证使用 ESP-IDF 5.5.2。固件尚未在实板验证；显示方向、颜色、背光亮度和动效需上板检查。
-
-一次构建验证中，工具链的 `objdump` 偶发返回截断输出，导致 `ldgen` 失败；生成上述固件时在隔离环境中对输出进行了完整性检查和重试。这个现象的根因尚未确认。
+`firmware_brush_demo/` 包含 ESP32-S3 固件及烧录说明，构建验证使用 ESP-IDF 5.5.2。

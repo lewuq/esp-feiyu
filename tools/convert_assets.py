@@ -1,7 +1,7 @@
 from pathlib import Path
 from PIL import Image
 import argparse
-p=argparse.ArgumentParser(); p.add_argument('source',type=Path); p.add_argument('--out',type=Path,default=Path(__file__).resolve().parents[1]/'main'/'assets'); args=p.parse_args()
+p=argparse.ArgumentParser(); p.add_argument('source', nargs='?', type=Path, default=Path(__file__).resolve().parents[1]/'assets'); p.add_argument('--out',type=Path,default=Path(__file__).resolve().parents[1]/'main'/'assets'); args=p.parse_args()
 names=['home','beg','caught','defiant','dust','flee','knocked','scared','gatling','broom','sock','rice']
 args.out.mkdir(parents=True,exist_ok=True)
 for n in names:
