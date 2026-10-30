@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大肥鱼语音网关设置</title>
+<style>
+:root { color-scheme: light; font-family: "Microsoft YaHei", system-ui, sans-serif; color:#17234b; background:#f4f6fc; }
+body { margin:0; } main { max-width:900px; margin:0 auto; padding:32px 20px 55px; }
+h1 { margin:0 0 8px; font-size:27px; } h2 { font-size:18px; margin:0 0 6px; }
+p { line-height:1.6; color:#5d6a89; margin:5px 0 16px; font-size:14px; }
+.card { background:#fff; border:1px solid #e1e6f2; border-radius:14px; padding:22px; margin:16px 0; box-shadow:0 5px 20px #24356d0a; }
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 18px; } .wide { grid-column:1/-1; }
+label { display:block; font-size:13px; font-weight:600; color:#34426d; } input,select,textarea { box-sizing:border-box; width:100%; border:1px solid #ced7e9; border-radius:8px; padding:10px 11px; font:inherit; margin-top:7px; background:#fff; }
+input:focus,textarea:focus,select:focus { outline:2px solid #9ab2ff; border-color:#526de5; } small { display:block; margin-top:5px; color:#70809e; font-weight:400; }
+.secret { display:flex; align-items:center; gap:9px; } .secret input { flex:1; min-width:0; } .secret button { margin-top:7px; }
+button { background:#4d6bfe; color:white; border:0; border-radius:8px; padding:11px 17px; font:inherit; font-weight:600; cursor:pointer; } .minor { background:#eef2ff; color:#3554c5; padding:10px; font-size:12px; }
+.notice { border-radius:9px; padding:12px 14px; background:#eef3ff; color:#3554a0; font-size:13px; line-height:1.6; } #message { margin-left:12px; font-size:14px; } code { background:#edf1f8; padding:2px 5px; border-radius:4px; word-break:break-all; }
+@media(max-width:600px){.grid {grid-template-columns:1fr}.wide {grid-column:auto} main{padding-top:22px}}
+</style>
+</head><body><main>
+<h1>大肥鱼语音网关</h1><p>把语音识别、DeepSeek 和语音合成连接起来。更改保存后立即用于下一次对话。</p>
+<div class="notice">配置页面仅本机可访问。密钥保存在本机项目目录中，不会在页面回显；空着密钥输入框会保留已保存的值。请勿将配置文件分享或上传。</div>
+<form id="settings">
+<section class="card"><h2>1 · 语音识别 ASR</h2><p>推荐：硅基流动 TeleSpeechASR，默认地址和模型已填好，填写硅基流动 API Key。</p><div class="grid">
+<label class="wide">接口 URL<input name="ASR_URL" type="url" placeholder="https://服务地址/v1 或完整转写接口"><small>填写基础地址时自动补充 /audio/transcriptions；也可直接填写完整接口地址。</small></label>
+<label>模型名称<input name="ASR_MODEL" placeholder="服务商提供的模型名称"></label>
+<label>API Key<div class="secret"><input name="ASR_KEY" type="password" autocomplete="new-password" placeholder="输入或留空保持不变"><button class="minor" type="button" data-show="ASR_KEY">显示</button><button class="minor" type="button" data-clear="ASR_KEY">清除</button></div><small data-status="ASR_KEY"></small></label>
+</div></section>
+<section class="card"><h2>2 · DeepSeek 对话</h2><p>默认地址和模型已填好，输入自己的 API Key 即可。</p><div class="grid">
+<label class="wide">接口 URL<input name="DEEPSEEK_URL" type="url"><small>可填写 https://api.deepseek.com 或完整 /chat/completions 接口。</small></label>
+<label>模型名称<input name="DEEPSEEK_MODEL"></label>
+<label>API Key<div class="secret"><input name="DEEPSEEK_KEY" type="password" autocomplete="new-password" placeholder="输入或留空保持不变"><button class="minor" type="button" data-show="DEEPSEEK_KEY">显示</button><button class="minor" type="button" data-clear="DEEPSEEK_KEY">清除</button></div><small data-status="DEEPSEEK_KEY"></small></label>
+<label class="wide">角色设定<textarea name="SYSTEM_PROMPT" rows="2"></textarea></label>
+</div></section>
+<section class="card"><h2>3 · 语音合成 TTS</h2><p>推荐：硅基流动 CosyVoice2，默认地址、模型和音色已填好，可使用与 ASR 相同的 API Key。</p><div class="grid">
+<label class="wide">接口 URL<input name="TTS_URL" type="url" placeholder="https://服务地址/v1 或完整语音合成接口"><small>填写基础地址时自动补充 /audio/speech；也可直接填写完整接口地址。</small></label>
+<label>模型名称<input name="TTS_MODEL" placeholder="服务商提供的模型名称"></label><label>音色名称<input name="TTS_VOICE" placeholder="服务商提供的 voice 参数"></label>
+<label class="wide">API Key<div class="secret"><input name="TTS_KEY" type="password" autocomplete="new-password" placeholder="输入或留空保持不变"><button class="minor" type="button" data-show="TTS_KEY">显示</button><button class="minor" type="button" data-clear="TTS_KEY">清除</button></div><small data-status="TTS_KEY"></small></label>
+</div></section>
+<section class="card"><h2>4 · 开发板连接</h2><p>开发板需要通过 Wi-Fi 访问这台电脑的网关。更改监听地址或端口后请重启网关。</p><div class="grid">
+<label>监听范围<select name="LISTEN_HOST"><option value="127.0.0.1">仅本机（默认）</option><option value="0.0.0.0">局域网设备可访问</option></select></label>
+<label>网关端口<input name="PORT" inputmode="numeric"></label>
+<label class="wide">设备令牌（可选）<div class="secret"><input name="DEVICE_TOKEN" type="password" autocomplete="new-password" placeholder="输入或留空保持不变"><button class="minor" type="button" data-show="DEVICE_TOKEN">显示</button><button class="minor" type="button" data-clear="DEVICE_TOKEN">清除</button></div><small data-status="DEVICE_TOKEN"></small></label>
+<div class="wide notice">设备地址格式：<code id="device-url">http://电脑的局域网IP:8080/voice</code>。在设备的 menuconfig 中填写该地址和相同令牌。公网使用请通过 HTTPS 反向代理。</div>
+</div></section>
+<div><button type="submit">保存配置</button><span id="message" role="status"></span></div>
+</form>
+</main><script>
+const cleared=new Set(); const token='__ADMIN_TOKEN__'; const form=document.getElementById('settings'); const msg=document.getElementById('message'); const secrets=['ASR_KEY','DEEPSEEK_KEY','TTS_KEY','DEVICE_TOKEN'];
+function render(data){
+  cleared.clear();
+  for(const [k,v] of Object.entries(data.values)){if(form.elements[k]) form.elements[k].value=v;}
+  for(const k of secrets){form.elements[k].value=''; document.querySelector(`[data-status="${k}"]`).textContent=data.configured[k]?'已配置；留空保持不变':'尚未配置';}
+  document.getElementById('device-url').textContent=`http://电脑的局域网IP:${data.values.PORT}/voice`;
+  if(data.environment_overrides.length) msg.textContent='以下环境变量优先于页面设置：'+data.environment_overrides.join('、');
+}
+async function load(){try{const r=await fetch('/api/config'); const j=await r.json(); if(!r.ok) throw new Error(j.error); render(j)}catch(e){msg.textContent='读取失败：'+e.message}}
+form.addEventListener('submit',async e=>{e.preventDefault();msg.textContent='保存中…';const values={};for(const el of form.elements){if(el.name)values[el.name]=el.value;}try{const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Token':token},body:JSON.stringify({values,clear:[...cleared]})});const j=await r.json();if(!r.ok)throw new Error(j.error);render(j);if(!j.environment_overrides.length)msg.textContent='已保存。监听范围或端口更改后请重启网关。'}catch(e){msg.textContent='保存失败：'+e.message;}});
+for(const b of document.querySelectorAll('[data-show]')) b.addEventListener('click',()=>{const i=form.elements[b.dataset.show];i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'显示':'隐藏';});
+for(const b of document.querySelectorAll('[data-clear]')) b.addEventListener('click',()=>{const k=b.dataset.clear;form.elements[k].value='';cleared.add(k);document.querySelector(`[data-status="${k}"]`).textContent='将在保存时清除';});
+for(const k of secrets) form.elements[k].addEventListener('input',()=>{if(cleared.delete(k)) document.querySelector(`[data-status="${k}"]`).textContent='输入新密钥后保存';});
+load();
+</script></body></html>

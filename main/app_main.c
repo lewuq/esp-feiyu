@@ -5,6 +5,7 @@
 #include "input/buttons.h"
 #include "resources/image_assets.h"
 #include "ui/ui.h"
+#include "voice/voice.h"
 #include "esp_check.h"
 #include "esp_log.h"
 #include "esp_timer.h"
@@ -15,6 +16,8 @@ static const char *TAG="dafeiyu";
 void app_main(void) {
     ESP_ERROR_CHECK(display_init());
     ESP_ERROR_CHECK(buttons_init());
+    esp_err_t voice_err = voice_init();
+    if (voice_err != ESP_OK) ESP_LOGW(TAG, "Voice unavailable: %s", esp_err_to_name(voice_err));
     unsigned index=0,slot=0;
     bool awake=true,first_frame=true;
     int64_t start=esp_timer_get_time()/1000;
@@ -24,7 +27,8 @@ void app_main(void) {
         button_event_t event;
         while (buttons_get_event(&event)) {
             if (event==BUTTON_POWER) { awake=!awake; ESP_ERROR_CHECK(display_set_backlight(awake)); }
-            else if (awake) index=(index+(event==BUTTON_PREV?CHARACTER_COUNT-1:1))%CHARACTER_COUNT;
+            else if (awake && event == BUTTON_PREV) index=(index+1)%CHARACTER_COUNT;
+            else if (awake && event == BUTTON_NEXT && !voice_start()) ESP_LOGW(TAG, "Voice not ready or busy");
         }
         if (awake) {
             int64_t elapsed=esp_timer_get_time()/1000-start;

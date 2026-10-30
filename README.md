@@ -1,77 +1,43 @@
-# DS DAFEIYU — XIAO 1.14 英寸 ESP-IDF 动效演示
+# 大肥鱼语音桌宠：XIAO 1.14 英寸 ESP32-S3 Plus
 
-适用于 Seeed XIAO 1.14'' IPS Display (ESP32-S3 Plus)，ESP-IDF 5.5.2，135×240 竖屏。上电后显示参考图风格的黑底蓝色笔触动画，文字分为 `DS`、`DAFEI`、`YU` 三行，按估算的笔画路径依次显现，然后进入角色画面。
+本工程基于已有 1.14 英寸大肥鱼动画工程，保留屏幕动画，增加板载 PDM 麦克风、Wi-Fi、网关请求与 I2S 播放。语音供应商尚未选定，网关实现的是可替换的 OpenAI 兼容 ASR / TTS 接口。没有 CAN 或触摸屏功能。
 
-- USR1 / USR2：上一个 / 下一个角色，循环切换。
-- 侧面 USR3：熄灭或点亮背光；再次亮屏时恢复配置亮度。熄屏时暂停刷新，芯片不进入深度睡眠。
-- 8 个角色姿态搭配 4 种武器，持续进行浮动动画。
+## 操作
 
-## 配置
+- USR1：切换角色。
+- USR2：录制固定 3 秒，发送一次语音请求。录音期间请说话。
+- USR3：打开或关闭屏幕背光。
+- 右上角圆点：蓝色空闲、红色录音、黄色等待、绿色播放、紫色错误。配置为空或联网失败时不能发起语音。
 
-在 `main/config/demo_config.h` 中调整：
+交互是按键触发、固定时长、按键式对话；网关为每台设备保留最近 6 轮上下文。当前不支持唤醒词、连续录音或字幕。
 
-```c
-#define INTRO_SPEED_PERCENT 150       // 150 表示 1.5 倍速
-#define DISPLAY_BRIGHTNESS_PERCENT 50 // 背光 PWM 占空比 50%
-```
+## 硬件
 
-开机书写进度与时间成线性关系，基础书写时长 6600 ms、完成后停留 900 ms；150% 时分别为 4400 ms 和 600 ms，总计约 5 秒。参数必须为正整数。亮度允许 0–100，50% 表示 50% PWM 占空比，实际观感亮度取决于背光电路和屏幕。
+XIAO 1.14 英寸 ESP32-S3 Plus 显示板自带麦克风，扬声器需要外接 I2S 数字功放（例如 MAX98357A）。按 Seeed 官方接法：D11/GPIO38 -> DIN，D12/GPIO39 -> BCLK，D13/GPIO40 -> LRC；接通电源、地和功放的扬声器端。PDM 麦克风使用 D0/GPIO1（CLK）、D1/GPIO2（DATA）。屏幕和麦克风、扬声器尚未实板测试。
 
-## 代码目录
+## 配置设备
 
-```text
-main/
-  app_main.c                 负责应用状态、事件和刷新调度
-  config/demo_config.h       速度和亮度等可调参数
-  config/board_config.h      GPIO、屏幕尺寸和偏移
-  display/display.c          ST7789、SPI DMA、双缓冲和 PWM 背光
-  input/buttons.c            三个按键的独立任务、去抖和事件队列
-  ui/ui.c                    开机及角色画面的绘制和动画
-  ui/graphics.c              像素、图形及透明图片混合
-  resources/image_assets.c   图片资源及角色/武器组合索引
-  assets/                    已转换并嵌入固件的二进制图像
-assets/actors/               大肥鱼原始姿态图片（WebP）
-assets/weapons/              原始武器图片（WebP）
-references/brush_reference.png 用户提供的开机文字参考图
-tools/convert_splash.py       根据参考图生成墨迹和书写顺序数据
-tools/convert_assets.py       将角色和武器 WebP 转换为嵌入式数据
-```
+ESP-IDF 5.5.2，目标 ESP32-S3，16 MB Flash、8 MB Octal PSRAM。使用 `idf.py menuconfig` 在 `Dafeiyu voice` 下设置 Wi-Fi SSID、密码、网关 URL 和可选网关令牌，然后 `idf.py build`、`idf.py -p COMx flash monitor`。SSID 和密码会进入本地 sdkconfig 和固件，切勿将包含真实凭据的文件提交或发布。首次生成默认配置时这些字段为空，不会连接网络。
 
-应用通过非阻塞状态更新完成动画；SPI DMA 传输和另一帧合成可以并行，按键扫描运行在独立任务中。图片资源由构建系统嵌入，不需要运行时文件系统。
+网关 URL 必须是开发板实际可访问的地址，例如 `http://192.168.x.x:8080/voice`；127.0.0.1 对开发板指向它自己。推荐使用可信证书的 HTTPS 反向代理。明文 HTTP 会暴露语音内容与设备令牌，只适合可信隔离局域网调试。
 
-## 编译与烧录
+## 网关：图形化填写 URL 和 Key
 
-打开 ESP-IDF 终端，进入本项目，然后执行：
+1. 双击项目根目录下的 `start_gateway.bat`。网关会启动，并自动打开本机设置页 `http://127.0.0.1:8081/`。保持启动窗口运行。
+2. 在页面分别填写 ASR、DeepSeek 和 TTS 的 **URL、模型和 API Key**；TTS 还需填写供应商要求的音色。DeepSeek 的默认地址和模型已填好。默认推荐硅基流动的 TeleSpeechASR 和 CosyVoice2，ASR 与 TTS 可填写同一个硅基流动 API Key；DeepSeek 使用自己的 API Key。
+3. 可以填写完整接口 URL；填写以 `/v1` 结尾的标准基础地址时，程序会自动补上相应的 `/audio/transcriptions` 或 `/audio/speech`。DeepSeek 基础地址自动补上 `/chat/completions`。
+4. 在“开发板连接”中选择“局域网设备可访问”、设置设备令牌并保存，然后关闭网关窗口并重新启动。开发板设置中的网关 URL 填 `http://电脑的局域网IP:8080/voice`，令牌与页面设置相同。
 
-```powershell
-idf.py build
-idf.py -p COM端口 flash monitor
-```
+密钥保存在 `gateway/config.local.json` 中，明文保存在本机，不在页面回显。文件已加入 `.gitignore`，不要将它分享、提交或上传。输入框留空并保存会保留原密钥，点“清除”并保存可删除；服务 URL 和密钥更改会用于下一次对话。监听地址和端口的更改需要重启。原来的环境变量仍支持，且优先级高于页面保存的配置；页面会提示哪些项被环境变量覆盖。
 
-将 `COM端口` 换成设备的实际端口；退出监视器按 `Ctrl+]`。`sdkconfig` 使用 USB Serial/JTAG 输出日志，避免默认 UART0 占用 USR1/USR2 的 GPIO43/44。若原 `build` 缓存来自不同 ESP-IDF 路径，可以执行 `idf.py fullclean` 后重新构建。
+网关需要 Python 3.11；启动脚本优先使用本机现有 ESP-IDF Python 3.11，其他电脑需自行安装 Python 3.11。也可在项目根目录执行 `python gateway/server.py --open`。
 
-## 硬件配置
+ASR 需要兼容 OpenAI multipart 音频转写接口；TTS 需要兼容 OpenAI speech 接口并能返回 16 位 PCM WAV。供应商接口若采用不同的协议、鉴权或格式，仍需修改 `gateway/server.py` 中对应适配器。设备与网关之间的明文 HTTP 仅适合可信局域网，公网应使用 HTTPS 反向代理；开发板应配置可信证书。
 
-| 信号 | GPIO | XIAO 引脚 |
-|---|---:|---|
-| LCD CS / DC | 3 / 4 | D2 / D3 |
-| LCD SCK / MOSI | 7 / 9 | D8 / D10 |
-| LCD RST / BL | 13 / 12 | D17 / D18 |
-| USR1 / USR2 / USR3 | 43 / 44 / 11 | D6 / D7 / D19 |
+网关 `/voice` 接收 16 kHz 单声道 16 位小端 PCM（最长 6 秒），返回同格式 PCM；设备发送 3 秒。语音和回复不写入磁盘；上下文仅保存在网关内存，重启后清空。
 
-ST7789 使用反色、RGB 顺序、RAM 偏移 `(52, 40)`。如画面偏移、上下颠倒或红蓝交换，请在实板上核对并调整 `main/config/board_config.h` 与 `main/display/display.c`。
+## 测试状态
 
-## 素材生成
+网关单元测试：`python -m unittest discover -s gateway -p 'test_*.py'`，使用模拟服务，不会访问云端。真实 ASR、DeepSeek、TTS、Wi-Fi、麦克风、放音和显示方向需要配置真实服务及实板验证。
 
-原始大肥鱼和武器图片分别保存在 `assets/actors`、`assets/weapons`；已转换的显示素材包含在 `main/assets` 中，不需要 Python 就能编译。需重新转换时，安装 Python Pillow 后运行：
-
-```powershell
-python tools/convert_splash.py
-python tools/convert_assets.py
-```
-
-开机图使用 8 位墨迹强度和 8 位笔画顺序，字符轨迹是根据参考图估算的书写路径，并非真实字体笔画数据。角色和武器存为 RGB565 大端序加 8 位透明度。角色素材来源及许可见 `ASSET-LICENSE.txt`。
-
-## 已编译固件
-
-`firmware_brush_demo/` 包含 ESP32-S3 固件及烧录说明，构建验证使用 ESP-IDF 5.5.2。
+原动效版说明见 [README_ANIMATION.md](README_ANIMATION.md)，素材来源和许可见 [ASSET-LICENSE.txt](ASSET-LICENSE.txt)。`firmware_brush_demo/` 是旧动效版固件，不包含语音功能；语音版请按本说明重新配置并构建。

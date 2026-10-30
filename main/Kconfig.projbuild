@@ -1,0 +1,14 @@
+menu "Dafeiyu voice"
+config DAFEIYU_WIFI_SSID
+    string "Wi-Fi SSID"
+    default ""
+config DAFEIYU_WIFI_PASSWORD
+    string "Wi-Fi password"
+    default ""
+config DAFEIYU_GATEWAY_URL
+    string "Speech gateway URL, including /voice"
+    default ""
+config DAFEIYU_GATEWAY_TOKEN
+    string "Gateway bearer token (optional)"
+    default ""
+endmenu

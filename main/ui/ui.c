@@ -1,4 +1,5 @@
 #include "ui/ui.h"
+#include "voice/voice.h"
 #include "config/board_config.h"
 #include "config/demo_config.h"
 #include "resources/image_assets.h"
@@ -36,5 +37,8 @@ void ui_draw_scene(uint8_t *buffer,unsigned index,int64_t elapsed_ms) {
     int sway=(int)lroundf(3*sinf(t*1.3f));
     gfx_image(buffer,image_actor(index),11+sway,47+bob);
     gfx_image(buffer,image_weapon(index),69+(int)lroundf(4*sinf(t*2.7f)),142+(int)lroundf(4*cosf(t*2.7f)));
+    voice_state_t state=voice_state();
+    uint16_t status = state==VOICE_RECORDING ? 0xf800 : state==VOICE_WAITING ? 0xffe0 : state==VOICE_PLAYING ? 0x07e0 : state==VOICE_ERROR ? 0xf81f : 0x4b5f;
+    gfx_disc(buffer, 123, 12, 4, status);
     for (int i=0;i<CHARACTER_COUNT;i++) gfx_disc(buffer,39+i*8,214,i==(int)index?2:1,i==(int)index?DEEPSEEK_BLUE:0x18e9);
 }
